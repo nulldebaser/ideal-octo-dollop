@@ -1,3 +1,5 @@
+local builtin = require('telescope.builtin')
+
 vim.g.mapleader = " "
 vim.keymap.set("n", "<leader>pv", vim.cmd.Ex)
 
@@ -62,26 +64,25 @@ vim.keymap.set(
 )
 
 vim.keymap.set("n", "<leader><leader>", function()
-    vim.cmd("so")
-end)
+    vim.cmd("source " .. vim.fn.stdpath("config") .. "/init.lua")
+end, { desc = "Reload Neovim config" })
 
 vim.keymap.set("n", "<leader>p", function()
-	require("telescope.builtin").find_files({
-		prompt_title = "Find in PythonProjects",
-		cwd = "C:/Users/IIIII/Documents/Projects/PythonProjects",
-	})
-end, { desc = "Browse PythonProjects folder" })
+    require("telescope.builtin").find_files({
+        prompt_title = "Find in Projects",
+        cwd = "/home/akadebaser/dev",
+    })
+end, { desc = "Browse Projects folder" })
 
 vim.keymap.set("n", "<leader>r", function()
-  vim.cmd("w")  -- save file
-  vim.cmd("!python " .. vim.fn.expand("%"))
+    vim.cmd("w")
+    vim.cmd("echo '' | !python3 " .. vim.fn.expand("%:p"))
 end, { desc = "Run Python file" })
 
-local builtin = require('telescope.builtin')
 vim.keymap.set('n', '<leader>ff', builtin.find_files, { desc = 'Telescope find files' })
 vim.keymap.set('n', '<C-p>', builtin.git_files, {})
 vim.keymap.set('n', '<leader>ps', function()
-	builtin.grep_string({ search = vim.fn.input("Grep > ") })
+    builtin.grep_string({ search = vim.fn.input("Grep > ") })
 end)
 
 vim.keymap.set('n', '<Tab>', ':tabn<CR>')

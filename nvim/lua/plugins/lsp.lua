@@ -1,42 +1,85 @@
 return {
-    -- Mason: easy install/manage language servers
+
+    -----------------------------------------------------------
+    -- Mason
+    -----------------------------------------------------------
     {
         "williamboman/mason.nvim",
         build = ":MasonUpdate",
         config = true,
     },
-    -- Bridges Mason with lspconfig
+
+    -----------------------------------------------------------
+    -- Mason <-> LSP bridge
+    -----------------------------------------------------------
     {
         "williamboman/mason-lspconfig.nvim",
-        dependencies = { "williamboman/mason.nvim", "neovim/nvim-lspconfig" },
+        dependencies = {
+            "williamboman/mason.nvim",
+            "neovim/nvim-lspconfig",
+        },
         config = function()
             require("mason-lspconfig").setup({
-                ensure_installed = { "lua_ls", "pyright", "ts_ls", "clangd" }, -- add more if you want
+                ensure_installed = {
+                    "lua_ls",
+                    "pyright",
+                    "ts_ls",
+                    "clangd",
+                    "html",
+                    "cssls",
+                    "ruff",
+                },
                 automatic_installation = true,
             })
         end,
     },
-    -- Core lsp config plugin
+
+    -----------------------------------------------------------
+    -- Core LSP (NEW API, CORRECT)
+    -----------------------------------------------------------
     {
         "neovim/nvim-lspconfig",
+        dependencies = {
+            "p00f/clangd_extensions.nvim",
+            "hrsh7th/cmp-nvim-lsp",
+        },
+
         config = function()
-            local lspconfig = require("lspconfig")
             local capabilities = require("cmp_nvim_lsp").default_capabilities()
+            local util = require("lspconfig.util")
 
-            capabilities.positionEncoding = "utf-16"
+            ---------------------------------------------------
+            -- HTML
+            ---------------------------------------------------
+            vim.lsp.config.html = {
+                capabilities = capabilities,
+            }
 
-            -- Lua LS setup
-            lspconfig.lua_ls.setup({
+            ---------------------------------------------------
+            -- CSS
+            ---------------------------------------------------
+            vim.lsp.config.cssls = {
+                capabilities = capabilities,
+            }
+
+            ---------------------------------------------------
+            -- Lua
+            ---------------------------------------------------
+            vim.lsp.config.lua_ls = {
                 capabilities = capabilities,
                 settings = {
                     Lua = {
-                        diagnostics = { globals = { "vim" } },
+                        diagnostics = {
+                            globals = { "vim" },
+                        },
                     },
                 },
-            })
+            }
 
-            -- Python: Pyright for type checking
-            lspconfig.pyright.setup({
+            ---------------------------------------------------
+            -- Python: Pyright
+            ---------------------------------------------------
+            vim.lsp.config.pyright = {
                 capabilities = capabilities,
                 settings = {
                     python = {
@@ -55,30 +98,83 @@ return {
                         },
                     },
                 },
-            })
+            }
 
-            -- Python: Ruff for linting only
-            lspconfig.ruff.setup({
-                capabilities = capabilities,
+            ---------------------------------------------------
+            -- Python: Ruff
+            ---------------------------------------------------
+            vim.lsp.config.ruff = {
+                capabilities = vim.tbl_deep_extend("force", capabilities, {
+                    offsetEncoding = { "utf-16" },
+                }),
                 on_attach = function(client)
-                    -- force UTF-16 position encoding
-                    client.offset_encoding = "utf-16"
                     client.server_capabilities.documentFormattingProvider = false
                 end,
+            }
+
+            ---------------------------------------------------
+            -- TypeScript
+            ---------------------------------------------------
+            vim.lsp.config.ts_ls = {
+                capabilities = capabilities,
+            }
+
+            ---------------------------------------------------
+            -- Enable non-clangd servers
+            ---------------------------------------------------
+            vim.lsp.enable({
+                "html",
+                "cssls",
+                "lua_ls",
+                "pyright",
+                "ruff",
+                "ts_ls",
             })
 
-            -- TypeScript/JavaScript
-            lspconfig.ts_ls.setup({
-                capabilities = capabilities,
-            })
+            ---------------------------------------------------
+            -- C / C++ : clangd (via clangd_extensions)
+            ---------------------------------------------------
+            require("clangd_extensions").setup({
+                server = {
+                    capabilities = vim.tbl_deep_extend("force", capabilities, {
+                        offsetEncoding = { "utf-16" },
+                    }),
 
-            -- C/C++
-            lspconfig.clangd.setup({
-                capabilities = capabilities,
+                    cmd = {
+                        "clangd",
+                        "--background-index",
+                        "--clang-tidy",
+                        "--completion-style=detailed",
+                        "--cross-file-rename",
+                        "--header-insertion=never",
+                    },
+
+                    root_dir = util.root_pattern(
+                        ".clangd",
+                        "compile_commands.json",
+                        "Makefile"
+                    ),
+
+                    on_attach = function(client)
+                        client.server_capabilities.documentFormattingProvider = false
+                    end,
+                },
+
+                extensions = {
+                    inlay_hints = {
+                        only_current_line = false,
+                        show_parameter_hints = true,
+                        parameter_hints_prefix = "⟪ ",
+                        other_hints_prefix = "⟫ ",
+                    },
+                },
             })
         end,
     },
-    -- Autocompletion engine
+
+    -----------------------------------------------------------
+    -- nvim-cmp (UNCHANGED)
+    -----------------------------------------------------------
     {
         "hrsh7th/nvim-cmp",
         dependencies = {
@@ -86,13 +182,17 @@ return {
             "hrsh7th/cmp-buffer",
             "hrsh7th/cmp-path",
             "saadparwaiz1/cmp_luasnip",
-            "L3MON4D3/LuaSnip", -- snippet engine
-            "onsails/lspkind.nvim", -- nice vscode-like icons
+            "L3MON4D3/LuaSnip",
+            "onsails/lspkind.nvim",
+            "rafamadriz/friendly-snippets",
         },
+
         config = function()
             local cmp = require("cmp")
             local luasnip = require("luasnip")
             local lspkind = require("lspkind")
+
+            require("luasnip.loaders.from_vscode").lazy_load()
 
             cmp.setup({
                 snippet = {
@@ -100,14 +200,19 @@ return {
                         luasnip.lsp_expand(args.body)
                     end,
                 },
+
                 completion = {
-                    autocomplete = { require("cmp.types").cmp.TriggerEvent.TextChanged },
+                    autocomplete = {
+                        require("cmp.types").cmp.TriggerEvent.TextChanged,
+                    },
                 },
+
                 mapping = cmp.mapping.preset.insert({
                     ["<C-b>"] = cmp.mapping.scroll_docs(-4),
                     ["<C-f>"] = cmp.mapping.scroll_docs(4),
                     ["<C-Space>"] = cmp.mapping.complete(),
                     ["<CR>"] = cmp.mapping.confirm({ select = true }),
+
                     ["<Tab>"] = cmp.mapping(function(fallback)
                         if cmp.visible() then
                             cmp.select_next_item()
@@ -117,6 +222,7 @@ return {
                             fallback()
                         end
                     end, { "i", "s" }),
+
                     ["<S-Tab>"] = cmp.mapping(function(fallback)
                         if cmp.visible() then
                             cmp.select_prev_item()
@@ -127,14 +233,19 @@ return {
                         end
                     end, { "i", "s" }),
                 }),
+
                 sources = {
                     { name = "nvim_lsp" },
                     { name = "luasnip" },
                     { name = "buffer" },
                     { name = "path" },
                 },
+
                 formatting = {
-                    format = lspkind.cmp_format({ with_text = true, maxwidth = 50 }),
+                    format = lspkind.cmp_format({
+                        with_text = true,
+                        maxwidth = 50,
+                    }),
                 },
             })
         end,
