@@ -1,4 +1,3 @@
--- plugins/treesitter.lua
 return {
     {
         "nvim-treesitter/nvim-treesitter",
@@ -20,10 +19,11 @@ return {
                     "html",
                     "css",
                     "python",
+                    "rust",
                 },
 
                 sync_install = false,
-                auto_install = false, -- ✅ IMPORTANT FIX
+                auto_install = false,
 
                 highlight = {
                     enable = true,

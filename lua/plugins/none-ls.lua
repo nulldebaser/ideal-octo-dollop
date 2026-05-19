@@ -12,10 +12,8 @@ return {
             sources = {
                 null_ls.builtins.formatting.black,
                 null_ls.builtins.formatting.prettier,
-                -- clang_format REMOVED because Conform handles C/C++
             },
             on_attach = function(client, bufnr)
-                -- No formatting autocmd here (Conform handles formatting)
             end,
         })
     end,

@@ -1,32 +1,64 @@
-local set_hl = vim.api.nvim_set_hl
+local hl = vim.api.nvim_set_hl
 
--- --- 1. CORE LANGUAGE (Universal) ---
-set_hl(0, "@variable", { fg = "#ece1d7" })       -- Warm Parchment (Main Text)
-set_hl(0, "@variable.builtin", { fg = "#b34b38" }) -- Burnt Orange (self, this, etc)
-set_hl(0, "@keyword", { fg = "#b34b38", bold = true }) -- Burnt Orange (if, return, for)
-set_hl(0, "@function", { fg = "#ce9e3b" })      -- Gold (Function names)
-set_hl(0, "@function.builtin", { fg = "#ce9e3b", italic = true })
-set_hl(0, "@type", { fg = "#859269" })          -- Moss Green (int, struct, class)
-set_hl(0, "@type.builtin", { fg = "#859269" })
-set_hl(0, "@constant", { fg = "#a6948a" })      -- Warm Grey (CONSTANTS)
-set_hl(0, "@number", { fg = "#d3869b" })        -- Muted Rose (1234)
-set_hl(0, "@string", { fg = "#859269" })        -- Moss Green ("strings")
-set_hl(0, "@operator", { fg = "#a6948a" })      -- Warm Grey (+, -, =)
-set_hl(0, "@property", { fg = "#a6948a" }) -- Warm Grey for struct members/object properties
-set_hl(0, "@parameter", { fg = "#dfd0c0", italic = true }) -- Slightly dimmer parchment for function arguments
+hl(0, "@variable", { fg = "#6f8f8a" })
+hl(0, "@variable.member", { fg = "#7aa6b8" })
+hl(0, "@variable.builtin", { fg = "#c47c48", italic = true })
 
--- --- 2. WEB / HTML (Melange Tones) ---
-set_hl(0, "@tag", { fg = "#ce9e3b", bold = true })
-set_hl(0, "@tag.attribute", { fg = "#b34b38", italic = true })
-set_hl(0, "@tag.delimiter", { fg = "#8b7653" })
+hl(0, "@parameter", { fg = "#b8a38a", italic = true })
+hl(0, "@variable.parameter", { fg = "#b8a38a", italic = true })
 
--- --- 3. UI TWEAKS ---
-set_hl(0, "GoalHighlight", { fg = "#ce9e3b", bold = true })
-set_hl(0, "Comment", { fg = "#5a4a3a", italic = true }) -- Deep Walnut
+hl(0, "@field", { fg = "#7aa6b8" })
+hl(0, "@property", { fg = "#7aa6b8" })
 
--- --- 4. THE TRANSPARENCY FIX ---
--- This ensures Alacritty's 0.9 opacity background shows through properly
-set_hl(0, "Normal", { bg = "none" })
-set_hl(0, "NormalFloat", { bg = "none" })
-set_hl(0, "SignColumn", { bg = "none" })
-set_hl(0, "EndOfBuffer", { fg = "#1d1a18" }) -- Hides the '~' characters
+hl(0, "@keyword", { fg = "#b34b38", bold = true })
+hl(0, "@keyword.function", { fg = "#b34b38", bold = true })
+hl(0, "@keyword.return", { fg = "#b34b38", bold = true })
+hl(0, "@conditional", { fg = "#b34b38", bold = true })
+hl(0, "@repeat", { fg = "#b34b38", bold = true })
+
+hl(0, "@function", { fg = "#d6a24a" })
+hl(0, "@function.call", { fg = "#d6a24a" })
+hl(0, "@function.builtin", { fg = "#d6a24a", italic = true })
+
+hl(0, "@function.method", { fg = "#5f89a6" })
+hl(0, "@function.method.call", { fg = "#6fa3c8", bold = true })
+
+hl(0, "@type", { fg = "#9ca33a" })
+hl(0, "@type.builtin", { fg = "#9ca33a", italic = true })
+hl(0, "@class", { fg = "#9ca33a", bold = true })
+hl(0, "@struct", { fg = "#9ca33a" })
+hl(0, "@namespace", { fg = "#b29f78" })
+
+hl(0, "@constant", { fg = "#b26a6a" })
+hl(0, "@constant.builtin", { fg = "#b26a6a", italic = true })
+
+hl(0, "@number", { fg = "#e07a5f" })
+hl(0, "@boolean", { fg = "#e07a5f", bold = true })
+hl(0, "@float", { fg = "#e07a5f" })
+
+hl(0, "@string", { fg = "#c7b089" })
+hl(0, "@string.escape", { fg = "#d6a24a" })
+
+hl(0, "@operator", { fg = "#8b8476" })
+hl(0, "@punctuation", { fg = "#8b8476" })
+hl(0, "@punctuation.delimiter", { fg = "#8b8476" })
+hl(0, "@punctuation.bracket", { fg = "#8b8476" })
+hl(0, "@punctuation.special", { fg = "#d6a24a" })
+
+hl(0, "@tag", { fg = "#d6a24a", bold = true })
+hl(0, "@tag.attribute", { fg = "#c47c48", italic = true })
+hl(0, "@tag.delimiter", { fg = "#8b8476" })
+
+hl(0, "@comment", { fg = "#7a7468", italic = true })
+hl(0, "Comment", { fg = "#7a7468", italic = true })
+
+hl(0, "LineNr", { fg = "#5f574a" })
+hl(0, "CursorLineNr", { fg = "#d6a24a", bold = true })
+
+hl(0, "Normal", { bg = "none" })
+hl(0, "NormalFloat", { bg = "none" })
+hl(0, "SignColumn", { bg = "none" })
+
+hl(0, "EndOfBuffer", { fg = "#2c2620" })
+
+hl(0, "GoalHighlight", { fg = "#d6a24a", bold = true })

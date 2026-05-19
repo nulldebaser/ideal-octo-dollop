@@ -7,7 +7,6 @@ return {
 
         harpoon:setup()
 
-        -- Example keybindings (you can change them to your preferences)
         local keymap = vim.keymap.set
         keymap("n", "<leader>a", function() harpoon:list():add() end, { desc = "Harpoon: Add file" })
         keymap("n", "<leader>h", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end,

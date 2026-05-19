@@ -13,17 +13,20 @@ return {
   },
   config = function()
     require('telescope').setup {
+      defaults = {
+        preview = {
+          treesitter = false,        },
+      },
       extensions = {
         fzf = {
-          fuzzy = true,                -- fuzzy matching
+          fuzzy = true,
           override_generic_sorter = true,
           override_file_sorter = true,
-          case_mode = "smart_case",   -- or "ignore_case" / "respect_case"
+          case_mode = "smart_case",
         }
       }
     }
 
-    -- Load the extension
     pcall(require('telescope').load_extension, 'fzf')
   end
 }
