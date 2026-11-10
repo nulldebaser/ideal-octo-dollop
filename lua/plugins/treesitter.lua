@@ -1,39 +1,32 @@
 return {
     {
         "nvim-treesitter/nvim-treesitter",
-        branch = "master",
+        branch = "main",
+        lazy = false,
         build = ":TSUpdate",
+
         config = function()
-            require("nvim-treesitter.configs").setup({
-                ensure_installed = {
-                    "javascript",
-                    "typescript",
-                    "c",
-                    "cpp",
-                    "lua",
-                    "vim",
-                    "vimdoc",
-                    "query",
-                    "markdown",
-                    "markdown_inline",
-                    "html",
-                    "css",
-                    "python",
-                    "rust",
-                },
+            local ts = require("nulldebaser.treesitter")
 
-                sync_install = false,
-                auto_install = false,
-
-                highlight = {
-                    enable = true,
-                },
-
-                indent = {
-                    enable = true,
-                    disable = { "c", "cpp" },
-                },
+            require("nvim-treesitter").setup({
+                install_dir = vim.fn.stdpath("data") .. "/site",
             })
+
+            ts.setup_autocmds()
+
+            vim.schedule(function()
+                require("nvim-treesitter").install(ts.parsers):await(function(err)
+                    if err then
+                        vim.notify(
+                            "Treesitter install: " .. tostring(err),
+                            vim.log.levels.WARN
+                        )
+                        return
+                    end
+
+                    ts.refresh_open_buffers()
+                end)
+            end)
         end,
     },
 }

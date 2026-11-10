@@ -16,6 +16,8 @@ vim.opt.rtp:prepend(lazypath)
 
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
+-- Override with: let g:nulldebaser_dev_dir = '~/Projects'  (or in init.lua)
+vim.g.nulldebaser_dev_dir = vim.g.nulldebaser_dev_dir or "~/dev"
 
 require("lazy").setup({
 	spec = {
@@ -23,4 +25,7 @@ require("lazy").setup({
 	},
 	install = { colorscheme = { "habamax" } },
 	checker = { enabled = true },
+	-- No plugin here needs luarocks; leaving it on makes :Lazy / :checkhealth error
+	-- because hererocks is not installed.
+	rocks = { enabled = false },
 })

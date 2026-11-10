@@ -1,14 +1,39 @@
-local builtin = require('telescope.builtin')
+local project = require("nulldebaser.project")
 
-vim.g.mapleader = " "
-
---------------------------------------------------
--- File explorer
---------------------------------------------------
-vim.keymap.set("n", "<leader>pv", vim.cmd.Ex)
+local function telescope()
+	return require("telescope.builtin")
+end
 
 --------------------------------------------------
--- Better movement / editing
+-- File / project navigation
+--------------------------------------------------
+vim.keymap.set("n", "<leader>pv", vim.cmd.Ex, { desc = "Open file explorer" })
+
+vim.keymap.set("n", "<leader>ff", function()
+	telescope().find_files({
+		hidden = true,
+		no_ignore = true,
+		cwd = vim.fn.expand("~"),
+	})
+end, { desc = "Find files (home)" })
+
+vim.keymap.set("n", "<C-p>", function()
+	telescope().git_files()
+end, { desc = "Git files" })
+
+vim.keymap.set("n", "<leader>ps", function()
+	telescope().grep_string({ search = vim.fn.input("Grep > ") })
+end, { desc = "Grep string" })
+
+vim.keymap.set("n", "<leader>p", function()
+	telescope().find_files({
+		prompt_title = "Projects",
+		cwd = project.dev_dir(),
+	})
+end, { desc = "Find files (projects)" })
+
+--------------------------------------------------
+-- Editing
 --------------------------------------------------
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
 vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv")
@@ -18,15 +43,14 @@ vim.keymap.set("n", "<C-d>", "<C-d>zz")
 vim.keymap.set("n", "<C-u>", "<C-u>zz")
 vim.keymap.set("n", "n", "nzzzv")
 vim.keymap.set("n", "N", "Nzzzv")
-
 vim.keymap.set("n", "=ap", "ma=ap'a")
 
 --------------------------------------------------
 -- Clipboard
 --------------------------------------------------
-vim.keymap.set({ "n", "v" }, "<leader>y", [["+y]])
-vim.keymap.set("n", "<leader>Y", [["+Y]])
-vim.keymap.set({ "n", "v" }, "<leader>d", "\"_d")
+vim.keymap.set({ "n", "v" }, "<leader>y", [["+y]], { desc = "Yank to system clipboard" })
+vim.keymap.set("n", "<leader>Y", [["+Y]], { desc = "Yank line to system clipboard" })
+vim.keymap.set({ "n", "v" }, "<leader>d", '"_d', { desc = "Delete without yank" })
 
 --------------------------------------------------
 -- Misc
@@ -34,177 +58,65 @@ vim.keymap.set({ "n", "v" }, "<leader>d", "\"_d")
 vim.keymap.set("i", "<C-c>", "<Esc>")
 vim.keymap.set("n", "Q", "<nop>")
 
-vim.keymap.set("n", "<leader>x", "<cmd>!chmod +x %<CR>", { silent = true })
+vim.keymap.set("n", "<leader>x", "<cmd>!chmod +x %<CR>", { silent = true, desc = "Make file executable" })
 
 vim.keymap.set("n", "<leader><leader>", function()
-    vim.cmd("source " .. vim.fn.stdpath("config") .. "/init.lua")
-end, { desc = "Reload Neovim config" })
+	vim.cmd("source " .. vim.fn.stdpath("config") .. "/init.lua")
+end, { desc = "Reload config" })
 
---------------------------------------------------
--- Telescope
---------------------------------------------------
-
-
-vim.keymap.set('n', '<leader>ff', function()
-  require('telescope.builtin').find_files({
-    hidden = true,
-    no_ignore = true,
-    cwd = vim.fn.expand('~'),
-  })
-end, { desc = 'Find files in home directory' })
-
-vim.keymap.set('n', '<C-p>', builtin.git_files, {})
-vim.keymap.set('n', '<leader>ps', function()
-    builtin.grep_string({ search = vim.fn.input("Grep > ") })
-end)
-
-vim.keymap.set("n", "<leader>p", function()
-    builtin.find_files({
-        prompt_title = "Find in Projects",
-        cwd = "/home/aleph/dev",
-    })
-end, { desc = "Browse Projects folder" })
-
---------------------------------------------------
--- Python runner (venv aware)
---------------------------------------------------
-vim.keymap.set("n", "<leader>r", function()
-    local python = "python3"
-    local venv = os.getenv("VIRTUAL_ENV")
-
-    if venv and venv ~= "" then
-        local sep = package.config:sub(1,1)
-        local python_bin = sep == "\\" and "\\Scripts\\python.exe" or "/bin/python"
-        python = venv .. python_bin
-    end
-
-    vim.cmd("w")
-    vim.cmd("!" .. python .. " " .. vim.fn.expand("%:p"))
-end, { desc = "Run Python file" })
-
---------------------------------------------------
--- Quickfix navigation
---------------------------------------------------
-vim.keymap.set("n", "<C-k>", "<cmd>cnext<CR>zz")
-vim.keymap.set("n", "<C-j>", "<cmd>cprev<CR>zz")
-vim.keymap.set("n", "<leader>k", "<cmd>lnext<CR>zz")
-vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz")
-
---------------------------------------------------
--- Replace word under cursor
---------------------------------------------------
 vim.keymap.set(
-    "n",
-    "<leader>s",
-    [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]]
+	"n",
+	"<leader>s",
+	[[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]],
+	{ desc = "Replace word under cursor" }
 )
 
 --------------------------------------------------
 -- Tabs
 --------------------------------------------------
-vim.keymap.set('n', '<Tab>', ':tabn<CR>')
+vim.keymap.set("n", "<leader>tn", ":tabn<CR>", { desc = "Next tab" })
+vim.keymap.set("n", "<leader>tp", ":tabp<CR>", { desc = "Previous tab" })
 
 --------------------------------------------------
--- Root detection helper
+-- Python
 --------------------------------------------------
-local function get_root()
-    local root = vim.fs.root(0, { "CMakeLists.txt", ".git" })
-    return root or vim.fn.getcwd()
-end
-
---------------------------------------------------
--- CMake build (FIXED KEYBIND)
---------------------------------------------------
-vim.keymap.set("n", "<leader>cb", function()
-    local root = get_root()
-
-    -- only build if CMake project exists
-    if vim.fn.filereadable(root .. "/CMakeLists.txt") == 0 then
-        vim.notify("No CMakeLists.txt found", vim.log.levels.WARN)
-        return
-    end
-
-    if vim.fn.isdirectory(root .. "/build") == 0 then
-        vim.cmd("!cmake -S " .. root .. " -B " .. root .. "/build")
-    end
-
-    vim.cmd("!cmake --build " .. root .. "/build")
-end, { desc = "CMake Build" })
+vim.keymap.set("n", "<leader>r", function()
+	vim.cmd("w")
+	vim.cmd("!" .. project.python() .. " " .. vim.fn.shellescape(vim.fn.expand("%:p")))
+end, { desc = "Run Python file" })
 
 --------------------------------------------------
--- Debugging (DAP)
+-- Quickfix / loclist
 --------------------------------------------------
-
--- Start debugging
-vim.keymap.set("n", "<leader>dd", function()
-    require("dap").continue()
-end, { desc = "Start Debugging" })
-
--- Build + Debug (C/C++ projects)
-vim.keymap.set("n", "<F5>", function()
-    local root = get_root()
-
-    if vim.fn.filereadable(root .. "/CMakeLists.txt") == 1 then
-        if vim.fn.isdirectory(root .. "/build") == 0 then
-            vim.cmd("!cmake -S " .. root .. " -B " .. root .. "/build")
-        end
-
-        vim.cmd("!cmake --build " .. root .. "/build")
-    end
-
-    require("dap").continue()
-end, { desc = "Build + Debug" })
-
--- Step controls
-vim.keymap.set("n", "<F10>", function() require("dap").step_over() end)
-vim.keymap.set("n", "<F11>", function() require("dap").step_into() end)
-vim.keymap.set("n", "<F12>", function() require("dap").step_out() end)
-
--- Breakpoints
-vim.keymap.set("n", "<leader>b", function()
-    require("dap").toggle_breakpoint()
-end, { desc = "Toggle breakpoint" })
-
-vim.keymap.set("n", "<leader>B", function()
-    require("dap").set_breakpoint(vim.fn.input("Condition: "))
-end, { desc = "Conditional breakpoint" })
-
-vim.keymap.set("n", "<leader>lp", function()
-    require("dap").set_breakpoint(nil, nil, vim.fn.input("Log: "))
-end, { desc = "Log point" })
-
--- Execution control
-vim.keymap.set("n", "<leader>dr", function()
-    require("dap").restart()
-end, { desc = "Restart debug" })
-
-vim.keymap.set("n", "<leader>dq", function()
-    require("dap").terminate()
-end, { desc = "Quit debug" })
+vim.keymap.set("n", "<C-k>", "<cmd>cnext<CR>zz", { desc = "Next quickfix" })
+vim.keymap.set("n", "<C-j>", "<cmd>cprev<CR>zz", { desc = "Previous quickfix" })
+vim.keymap.set("n", "<leader>k", "<cmd>lnext<CR>zz", { desc = "Next loclist" })
+vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz", { desc = "Previous loclist" })
 
 --------------------------------------------------
--- LSP
+-- Diagnostics (K for hover is set on LspAttach in lsp.lua)
 --------------------------------------------------
-vim.keymap.set("n", "<leader>zig", "<cmd>LspRestart<cr>")
-
--- K: diagnostics float (as before)
-vim.keymap.set("n", "K", vim.diagnostic.open_float, { desc = "Diagnostics under cursor" })
-
--- Show diagnostics for the current line (without exact token positioning)
 vim.keymap.set("n", "<leader>e", function()
-    vim.diagnostic.open_float(nil, { scope = "line" })
-end, { desc = "Line diagnostics (float)" })
+	vim.diagnostic.open_float(nil, { scope = "line" })
+end, { desc = "Line diagnostics" })
 
--- Show all diagnostics for the current buffer in the location list
 vim.keymap.set("n", "<leader>,", function()
-    vim.diagnostic.setloclist({ open = true })
-end, { desc = "Buffer diagnostics (loclist)" })
+	vim.diagnostic.setloclist({ open = true })
+end, { desc = "Buffer diagnostics to loclist" })
 
--- Jump between diagnostics in the current buffer
 vim.keymap.set("n", "]d", function()
-    vim.diagnostic.goto_next({ float = false })
+	vim.diagnostic.jump({ count = 1, float = false })
 end, { desc = "Next diagnostic" })
 
 vim.keymap.set("n", "[d", function()
-    vim.diagnostic.goto_prev({ float = false })
+	vim.diagnostic.jump({ count = -1, float = false })
 end, { desc = "Previous diagnostic" })
+
+--------------------------------------------------
+-- CMake / LSP
+--------------------------------------------------
+vim.keymap.set("n", "<leader>cb", function()
+	project.cmake_build()
+end, { desc = "CMake build" })
+
+vim.keymap.set("n", "<leader>zig", "<cmd>LspRestart<cr>", { desc = "Restart LSP" })

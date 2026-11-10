@@ -15,7 +15,8 @@ return {
     require('telescope').setup {
       defaults = {
         preview = {
-          treesitter = false,        },
+          treesitter = true,
+        },
       },
       extensions = {
         fzf = {
